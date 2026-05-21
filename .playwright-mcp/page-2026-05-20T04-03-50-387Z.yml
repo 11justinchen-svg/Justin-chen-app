@@ -1,0 +1,17 @@
+- generic [active] [ref=e1] [cursor=pointer]:
+  - main [ref=e2]:
+    - generic:
+      - generic: Justin Chen
+      - generic: The Harker School
+    - generic:
+      - generic: Index, Vol. 01
+      - generic: 05 works
+    - generic:
+      - generic: Editions
+      - generic:
+        - generic: Newsletter for Harker
+        - generic: "[live]"
+    - generic: Darkroom edition, 2026
+  - button "Open Next.js Dev Tools" [ref=e11]:
+    - img [ref=e12]
+  - alert [ref=e15]

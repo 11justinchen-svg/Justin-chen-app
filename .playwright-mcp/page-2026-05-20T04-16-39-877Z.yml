@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - region "Intro" [ref=e2]:
+    - generic:
+      - heading "Justin Chen" [level=1]
+    - generic:
+      - generic: Scroll ↓
+  - region "Project showcase" [ref=e4]:
+    - generic:
+      - generic: Justin Chen
+      - generic: The Harker School
+    - generic:
+      - generic: Index, Vol. 01
+      - generic: 05 works
+    - generic:
+      - generic: Index
+      - generic:
+        - generic: hover a plane to read, click to open
+    - generic: Darkroom edition, 2026
+  - button "Open Next.js Dev Tools" [ref=e13] [cursor=pointer]:
+    - img [ref=e14]
+  - alert [ref=e17]
