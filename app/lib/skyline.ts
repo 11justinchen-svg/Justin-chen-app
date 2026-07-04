@@ -182,14 +182,15 @@ export function buildSkyline(): Cell[] {
     }
   };
 
-  // Puxi flank (left): older, lower blocks
-  building(1, 4, 17, "concrete");
-  building(6, 3, 21, "darkGlass");
-  building(10, 4, 19, "concrete");
-  building(15, 3, 23, "darkGlass");
-  building(19, 2, 16, "concrete");
+  // Puxi flank (left): four blocks with strong height contrast, each
+  // separated by 2 empty sky columns so the silhouettes read individually
+  building(1, 3, 14, "concrete");
+  building(6, 3, 22, "darkGlass");
+  building(11, 4, 16, "concrete");
+  building(17, 3, 25, "darkGlass");
+  // columns 20-22 stay open so the Pearl tripod stands alone
 
-  // Oriental Pearl Tower (x 22..28)
+  // Oriental Pearl Tower (x 23..27)
   // tripod legs
   for (let y = 10; y <= 12; y++) {
     put(23, y, "building", P.spireDay, P.spireNight);
@@ -240,9 +241,10 @@ export function buildSkyline(): Cell[] {
   building(48, 3, 34, "blueGlass");
   building(49, 2, 36, "blueGlass");
 
-  // Pudong flank (right)
-  building(54, 4, 20, "darkGlass");
-  building(59, 4, 16, "concrete");
+  // Pudong flank (right): stepping down and away from Shanghai Tower,
+  // 2 empty sky columns between each block
+  building(54, 3, 22, "darkGlass");
+  building(59, 3, 14, "concrete");
 
   return grid.flat();
 }
