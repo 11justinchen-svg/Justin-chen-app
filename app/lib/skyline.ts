@@ -1,8 +1,11 @@
 // Procedural pixel map of the Lujiazui skyline as seen from the Bund.
-// Grid is y-up: row 0 is the river's edge, row H-1 is the top of the sky.
+// Grid is y-up: rows 0-8 are the Huangpu river, row 9 the waterfront,
+// buildings rise from row 10, sky fills the rest.
 
 export const GRID_W = 64;
-export const GRID_H = 40;
+export const GRID_H = 52;
+export const RIVER_TOP = 8; // highest river row
+export const GROUND_Y = 9;
 
 export type CellKind =
   | "sky"
@@ -18,6 +21,7 @@ export interface Cell {
   kind: CellKind;
   day: [number, number, number]; // linear-ish RGB 0..1
   night: [number, number, number];
+  accent: [number, number, number] | null; // night facade tint (per building)
   seed: number; // stable per-cell random, 0..1
 }
 
@@ -62,7 +66,7 @@ function jitter(
 const P = {
   skyTopDay: hex("#3F8FCC"),
   skyBotDay: hex("#A9D6EC"),
-  skyTopNight: hex("#131A3B"),
+  skyTopNight: hex("#10162F"),
   skyBotNight: hex("#2E3E6E"),
   cloudDay: hex("#F3EFE4"),
   cloudNight: hex("#3C4460"),
@@ -90,6 +94,20 @@ export const WINDOW_LIT: [number, number, number] = hex("#F5C86A");
 export const CLOUD_DAY = P.cloudDay;
 export const CLOUD_NIGHT = P.cloudNight;
 export const LETTER_RED: [number, number, number] = hex("#C4281C");
+export const BIRD_COLOR: [number, number, number] = hex("#2E3338");
+export const BOAT_HULL: [number, number, number] = hex("#E8E4D8");
+export const BOAT_LIGHT: [number, number, number] = hex("#FFD98A");
+export const BEAM_COLOR: [number, number, number] = hex("#9FD4FF");
+
+// night facade accents, inspired by the real illuminated Bund view:
+// magenta, cyan, gold, crimson, violet
+const ACCENTS: [number, number, number][] = [
+  hex("#D2559C"),
+  hex("#3FB8C9"),
+  hex("#D9A441"),
+  hex("#C2453E"),
+  hex("#7E5BC2"),
+];
 
 type Style = "concrete" | "darkGlass" | "blueGlass" | "gold";
 
@@ -106,6 +124,7 @@ const STYLES: Record<
 export function buildSkyline(): Cell[] {
   const rand = rng(20260703);
   const grid: Cell[][] = [];
+  let buildingCount = 0;
 
   // 1. Sky gradient everywhere
   for (let y = 0; y < GRID_H; y++) {
@@ -119,6 +138,7 @@ export function buildSkyline(): Cell[] {
         kind: "sky",
         day: jitter(mix(P.skyBotDay, P.skyTopDay, t), 0.05, rand()),
         night: jitter(mix(P.skyBotNight, P.skyTopNight, t), 0.05, rand()),
+        accent: null,
         seed,
       };
     }
@@ -130,94 +150,106 @@ export function buildSkyline(): Cell[] {
     kind: CellKind,
     day: [number, number, number],
     night: [number, number, number],
+    accent: [number, number, number] | null = null,
   ) => {
     if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) return;
     const c = grid[y][x];
     c.kind = kind;
     c.day = jitter(day, 0.06, rand());
     c.night = jitter(night, 0.06, rand());
+    c.accent = accent;
   };
 
-  // 2. Huangpu river (rows 0..4) and waterfront strip (row 5)
-  for (let y = 0; y <= 4; y++) {
+  // 2. Huangpu river (rows 0..8) and waterfront strip (row 9)
+  for (let y = 0; y <= RIVER_TOP; y++) {
     for (let x = 0; x < GRID_W; x++)
       put(x, y, "river", P.riverDay, P.riverNight);
   }
   for (let x = 0; x < GRID_W; x++)
-    put(x, 5, "ground", P.groundDay, P.groundNight);
+    put(x, GROUND_Y, "ground", P.groundDay, P.groundNight);
 
-  // 3. Buildings: solid body, window cells on an offset grid
+  // 3. Buildings: solid body, window cells on an offset grid, night accent tint
   const building = (x0: number, w: number, top: number, style: Style) => {
     const s = STYLES[style];
+    const accent = ACCENTS[buildingCount++ % ACCENTS.length];
     for (let x = x0; x < x0 + w; x++) {
-      for (let y = 6; y <= top; y++) {
-        const isWindow = (x - x0) % 2 === 1 && (y - 6) % 2 === 0 && y < top;
-        if (isWindow) put(x, y, "window", P.windowDay, P.windowNight);
-        else put(x, y, "building", s.day, s.night);
+      for (let y = GROUND_Y + 1; y <= top; y++) {
+        const isWindow =
+          (x - x0) % 2 === 1 && (y - GROUND_Y - 1) % 2 === 0 && y < top;
+        if (isWindow) put(x, y, "window", P.windowDay, P.windowNight, accent);
+        else put(x, y, "building", s.day, s.night, accent);
       }
     }
   };
 
   // Puxi flank (left): older, lower blocks
-  building(1, 4, 13, "concrete");
-  building(6, 3, 17, "darkGlass");
-  building(10, 4, 15, "concrete");
-  building(15, 3, 19, "darkGlass");
-  building(19, 2, 12, "concrete");
+  building(1, 4, 17, "concrete");
+  building(6, 3, 21, "darkGlass");
+  building(10, 4, 19, "concrete");
+  building(15, 3, 23, "darkGlass");
+  building(19, 2, 16, "concrete");
 
   // Oriental Pearl Tower (x 22..28)
   // tripod legs
-  for (let y = 6; y <= 8; y++) {
+  for (let y = 10; y <= 12; y++) {
     put(23, y, "building", P.spireDay, P.spireNight);
     put(25, y, "building", P.spireDay, P.spireNight);
     put(27, y, "building", P.spireDay, P.spireNight);
   }
   // lower sphere
-  for (let y = 9; y <= 13; y++) {
-    const half = y === 9 || y === 13 ? 1 : 2;
+  for (let y = 13; y <= 17; y++) {
+    const half = y === 13 || y === 17 ? 1 : 2;
     for (let x = 25 - half; x <= 25 + half; x++)
       put(x, y, "pearl", P.pearlDay, P.pearlNight);
   }
   // shaft
-  for (let y = 14; y <= 17; y++)
+  for (let y = 18; y <= 21; y++)
     put(25, y, "building", P.spireDay, P.spireNight);
   // upper sphere
-  for (let y = 18; y <= 20; y++) {
-    const half = y === 19 ? 1 : 0;
+  for (let y = 22; y <= 24; y++) {
+    const half = y === 23 ? 1 : 0;
     for (let x = 25 - half; x <= 25 + half; x++)
       put(x, y, "pearl", P.pearlDay, P.pearlNight);
   }
   // antenna
-  for (let y = 21; y <= 27; y++)
+  for (let y = 25; y <= 31; y++)
     put(25, y, "building", P.spireDay, P.spireNight);
 
   // Jin Mao Tower (gold, tiered, x 31..36)
-  building(31, 6, 15, "gold");
-  building(32, 4, 20, "gold");
-  building(33, 2, 24, "gold");
-  put(33, 25, "building", P.goldDay, P.goldNight);
+  building(31, 6, 19, "gold");
+  building(32, 4, 24, "gold");
+  building(33, 2, 28, "gold");
+  put(33, 29, "building", P.goldDay, P.goldNight);
 
   // Shanghai World Financial Center — the "bottle opener" (x 39..43)
-  building(39, 5, 27, "darkGlass");
+  building(39, 5, 31, "darkGlass");
   // the trapezoid opening at the top reads as sky
-  for (let y = 24; y <= 26; y++) {
+  for (let y = 28; y <= 30; y++) {
     const c = grid[y][41];
     const t = y / (GRID_H - 1);
     c.kind = "sky";
     c.day = mix(P.skyBotDay, P.skyTopDay, t);
     c.night = mix(P.skyBotNight, P.skyTopNight, t);
+    c.accent = null;
   }
 
   // Shanghai Tower (tallest, tapering blue glass, x 46..51)
-  building(46, 6, 15, "blueGlass");
-  building(46, 5, 21, "blueGlass");
-  building(47, 4, 26, "blueGlass");
-  building(48, 3, 30, "blueGlass");
-  building(49, 2, 32, "blueGlass");
+  building(46, 6, 19, "blueGlass");
+  building(46, 5, 25, "blueGlass");
+  building(47, 4, 30, "blueGlass");
+  building(48, 3, 34, "blueGlass");
+  building(49, 2, 36, "blueGlass");
 
   // Pudong flank (right)
-  building(54, 4, 16, "darkGlass");
-  building(59, 4, 12, "concrete");
+  building(54, 4, 20, "darkGlass");
+  building(59, 4, 16, "concrete");
 
   return grid.flat();
 }
+
+// tops of the two tallest structures, where searchlight beams originate
+// and aircraft warning lights blink at night
+export const BEACONS: { x: number; y: number }[] = [
+  { x: 25, y: 31 }, // Oriental Pearl antenna tip
+  { x: 49, y: 36 }, // Shanghai Tower cap
+];
