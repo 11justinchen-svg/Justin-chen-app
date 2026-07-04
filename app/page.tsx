@@ -1,13 +1,16 @@
 import LegoHero from "./components/LegoHero";
-import BrickCollage from "./components/BrickCollage";
+import LegoTear from "./components/LegoTear";
 
 export default function Home() {
   return (
     <>
-      <LegoHero />
-      <BrickCollage />
-      {/* future content */}
-      <section className="h-screen bg-[#0a0a0c]" />
+      {/* hero stays pinned while the lego tear climbs over it */}
+      <div className="sticky top-0 h-screen">
+        <LegoHero />
+      </div>
+      <LegoTear />
+      {/* blank black page revealed by the tear (content comes later) */}
+      <section className="relative z-20 min-h-screen bg-black" />
     </>
   );
 }
