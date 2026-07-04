@@ -73,12 +73,6 @@ const BIRDS = [
   { base: 34, speed: 2.8, offset: 44, wobble: 0.9 },
 ];
 
-const SPARKLE_HUES: [number, number, number][] = [
-  [1.0, 0.8, 0.4], // gold
-  [1.0, 0.5, 0.7], // pink
-  [0.5, 0.85, 1.0], // cyan
-];
-
 function useBricks(): Brick[] {
   return useMemo(() => {
     const bricks: Brick[] = [];
@@ -306,17 +300,6 @@ function Scene({ reducedMotion }: { reducedMotion: boolean }) {
                 }
               }
             }
-            // night: distant fireworks flashing in the air
-            if (cell.y > 24) {
-              const f = (t * 0.12 + cell.seed * 13) % 1;
-              if (f < 0.05) {
-                const burst = Math.sin((f / 0.05) * Math.PI) * n;
-                const hue = SPARKLE_HUES[Math.floor(cell.seed * 3) % 3];
-                r += (hue[0] - r) * burst;
-                g += (hue[1] - g) * burst;
-                bl += (hue[2] - bl) * burst;
-              }
-            }
             // sparse stars
             if (cell.seed > 0.985) {
               const tw = 0.6 + 0.4 * Math.sin(t * 2.5 + cell.seed * 90);
@@ -461,9 +444,29 @@ export default function LegoHero() {
         <FitCamera />
         <Scene reducedMotion={reducedMotion} />
       </Canvas>
-      <p className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400">
+      {/* top-left: site title */}
+      <p className="pointer-events-none absolute left-6 top-6 font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-300">
         Justin Chen · Portfolio
       </p>
+      {/* bottom-center: hint bar, Endless Tools style */}
+      <p className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">
+        Move mouse to tilt <span className="text-zinc-600">·</span> Scroll to
+        continue
+      </p>
+      {/* bottom-left: source-image chip, like the template's thumbnail */}
+      <div className="pointer-events-none absolute bottom-6 left-6 flex flex-col gap-1.5">
+        <div
+          aria-hidden
+          className="h-10 w-14 rounded-lg border border-white/25 shadow-lg shadow-black/40"
+          style={{
+            background:
+              "linear-gradient(to bottom, #3F8FCC 0%, #A9D6EC 76%, #2E6E7E 80%, #17293E 100%)",
+          }}
+        />
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+          Shanghai
+        </span>
+      </div>
     </section>
   );
 }
