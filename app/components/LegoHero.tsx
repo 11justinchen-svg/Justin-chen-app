@@ -249,7 +249,9 @@ function Scene({ reducedMotion }: { reducedMotion: boolean }) {
       const b = bricks[i];
       const cell = b.cell;
       if (!cell) {
-        col.setRGB(b.color[0], b.color[1], b.color[2]);
+        // palette constants are sRGB display values — declare the space so
+        // three converts to linear instead of double-encoding (washes out)
+        col.setRGB(b.color[0], b.color[1], b.color[2], THREE.SRGBColorSpace);
         mesh.current.setColorAt(i, col);
         continue;
       }
@@ -365,15 +367,22 @@ function Scene({ reducedMotion }: { reducedMotion: boolean }) {
         }
       }
 
-      col.setRGB(Math.max(0, r), Math.max(0, g), Math.max(0, Math.min(1, bl)));
+      col.setRGB(
+        Math.max(0, r),
+        Math.max(0, g),
+        Math.max(0, Math.min(1, bl)),
+        THREE.SRGBColorSpace,
+      );
       mesh.current.setColorAt(i, col);
     }
     if (mesh.current.instanceColor)
       mesh.current.instanceColor.needsUpdate = true;
 
     // lights dim into the night
-    dirLight.current.intensity = 1.3 - 0.75 * n;
-    ambLight.current.intensity = 0.65 - 0.25 * n;
+    // day tops out at ~1.4x combined illumination — higher washes the
+    // palette toward white through the tone mapper
+    dirLight.current.intensity = 0.95 - 0.4 * n;
+    ambLight.current.intensity = 0.5 - 0.1 * n;
 
     // --- mouse parallax around a gentle base tilt ---
     const targetY = 0.08 + mouse.current.x * 0.09;
@@ -384,11 +393,11 @@ function Scene({ reducedMotion }: { reducedMotion: boolean }) {
 
   return (
     <group ref={group} rotation={[-0.1, 0.08, 0]}>
-      <ambientLight ref={ambLight} intensity={0.65} />
+      <ambientLight ref={ambLight} intensity={0.5} />
       <directionalLight
         ref={dirLight}
         position={[-16, 22, 24]}
-        intensity={1.3}
+        intensity={0.95}
       />
       <instancedMesh
         ref={mesh}
@@ -438,6 +447,7 @@ export default function LegoHero() {
     <section className="relative h-screen w-full overflow-hidden bg-[#0a0a0c]">
       <Canvas
         orthographic
+        flat
         dpr={[1, 2]}
         camera={{ position: [0, 0, 100], zoom: 16, near: 0.1, far: 400 }}
       >

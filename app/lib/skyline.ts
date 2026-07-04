@@ -130,7 +130,9 @@ export function buildSkyline(): Cell[] {
   for (let y = 0; y < GRID_H; y++) {
     grid[y] = [];
     for (let x = 0; x < GRID_W; x++) {
-      const t = y / (GRID_H - 1); // 0 bottom -> 1 top
+      // full gradient depth by row 40: the cover crop hides rows above ~41,
+      // so stretching to GRID_H-1 would leave only the pale horizon visible
+      const t = Math.min(1, y / 40);
       const seed = rand();
       grid[y][x] = {
         x,
@@ -227,7 +229,7 @@ export function buildSkyline(): Cell[] {
   // the trapezoid opening at the top reads as sky
   for (let y = 28; y <= 30; y++) {
     const c = grid[y][41];
-    const t = y / (GRID_H - 1);
+    const t = Math.min(1, y / 40); // match the sky gradient above
     c.kind = "sky";
     c.day = mix(P.skyBotDay, P.skyTopDay, t);
     c.night = mix(P.skyBotNight, P.skyTopNight, t);
