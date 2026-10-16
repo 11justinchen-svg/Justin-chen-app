@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Justin's Portfolio</title>
+<meta name="description" content="Justin builds websites for local businesses. Every project starts with a free homepage mockup.">
+<meta name="theme-color" content="#F5F5F7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Mona Sans is only for the example bakery's redesigned site; the portfolio itself uses the system face -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mona+Sans:wdth,wght@100..125,700..900&display=swap">
+<style>
+/* Layout: one long scroll told as a before/after diff. Each scene is a tall section with a sticky 100svh stage;
+   scroll progress (--p, 0→1) drives the change, and a change of background color is the section break.
+   Type follows Apple's system: one superfamily, sentence case, semibold headlines, slight negative tracking.
+
+   Storyboard (desktop / phone scroll length):
+   1 Hero        auto     "− Template sites." is struck on load; "+ Crafted sites." is the thesis.
+   2 #same       260/200vh  "look the same." is struck while you scroll, then "+ should look like the business." rises in.
+   3 #who        280/220vh  A green "+" grows until it becomes the background, a ShaderGradient fades in over it,
+                          and the credentials rise in. The gradient code loads only when this scene is near.
+   4 #case       340/260vh  A green "+" handle wipes a generic bakery site into a crafted one; notes light up in step.
+   5 How         auto     Three steps, indented like a staircase.
+   6 Finale      auto     Contact line and a full-width "Justin+". */
+:root {
+  --paper: #F5F5F7;     /* Apple's light grey surface */
+  --ink: #1D1D1F;       /* Apple's near-black text */
+  --night: #000000;     /* dark scene surface */
+  --mute: #6E6E73;      /* secondary text on paper */
+  --add: #1A7A4A;       /* "+" green on paper; 4.9:1, passes AA for link text */
+  --add-bg: #4CC38A;    /* takeover green, holds ink text */
+  --del: #D7372E;       /* "−" red, strike-throughs only */
+  --rye: #3A2316;       /* example bakery: crust */
+  --flour: #F2E7D3;     /* example bakery: flour */
+  --wheat: #E6B465;     /* example bakery: accent */
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+  --bakery: "Mona Sans", "Helvetica Neue", Arial, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+/* A single, deliberate look: scenes set their own surfaces, so there is no dark-theme override. */
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+.wrap {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: 1440px;
+  margin-inline: auto;
+}
+a { color: inherit; }
+a:focus-visible { outline: 2px solid var(--add-bg); outline-offset: 3px; border-radius: 4px; }
+
+/* Eyebrow: Apple-style small semibold line, sentence case */
+.eyebrow { display: block; font-size: 17px; font-weight: 600; letter-spacing: -0.022em; }
+.link { color: var(--add); font-weight: 400; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+/* Display type: big, semibold, sentence case, tight */
+.disp {
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* Diff marks hang in the margin, so every line of text (wrapped ones too) starts on the same edge */
+del, ins { text-decoration: none; }
+.diff { padding-left: 0.74em; }
+.g { display: inline-block; width: 0.74em; margin-left: -0.74em; font-weight: 500; }
+.del .g { color: var(--del); }
+.add .g { color: var(--add); }
+
+/* Strike drawn per line (works when the text wraps) */
+.strike {
+  background: linear-gradient(var(--del), var(--del)) no-repeat 0 58% / var(--sw, 100%) 0.075em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ---------- Header: plain, quiet, like Apple's global nav ---------- */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 52px;
+  padding-top: env(safe-area-inset-top, 0px);
+  font-size: 14px;
+  letter-spacing: -0.016em;
+}
+.top .name { font-size: 17px; font-weight: 600; letter-spacing: -0.022em; text-decoration: none; }
+
+/* ---------- Scene 1: hero ---------- */
+.hero { padding-block: 0 64px; }
+.hero .meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 24px;
+  color: var(--mute);
+  font-size: 14px;
+  letter-spacing: -0.016em;
+  padding-block: clamp(48px, 10vh, 112px) clamp(24px, 4vh, 40px);
+  border-bottom: 1px solid rgb(29 29 31 / 0.12);
+  margin-bottom: clamp(32px, 6vh, 64px);
+}
+.hero .disp { font-size: clamp(48px, 13.4vw, 240px); }
+.hero .ln { display: block; }
+.hero .ln.del .t { color: rgb(29 29 31 / 0.3); }
+.hero .ln.del .strike { animation: draw 1.1s var(--ease) 0.35s both; }
+.hero .lede {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 28rem);
+  gap: 24px;
+  margin-top: clamp(40px, 7vh, 80px);
+}
+.hero .lede p { margin: 0; font-size: 21px; line-height: 1.38; letter-spacing: 0.011em; color: var(--ink); }
+.hero .lede p strong { font-weight: 600; }
+.hero .lede .link { display: inline-block; margin-top: 14px; font-size: 17px; }
+@keyframes draw { from { background-size: 0% 0.075em; } to { background-size: 100% 0.075em; } }
+
+/* ---------- Pinned scene scaffolding ---------- */
+.scene { position: relative; --p: 1; }
+.stage > .wrap { width: 100%; }
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- Scene 2: the problem, corrected on scroll ---------- */
+#same { height: 260vh; }
+#same .disp { font-size: clamp(40px, 8vw, 144px); }
+#same .old {
+  --sw: calc(clamp(0, (var(--p) - 0.12) / 0.3, 1) * 100%);
+  color: rgb(29 29 31 / calc(1 - clamp(0, (var(--p) - 0.45) / 0.2, 1) * 0.7));
+}
+#same .mask { display: block; overflow: hidden; padding-bottom: 0.08em; margin-left: -0.74em; padding-left: 0.74em; }
+#same .new {
+  display: block;
+  color: var(--add);
+  transform: translateY(calc((1 - clamp(0, (var(--p) - 0.48) / 0.24, 1)) * 105%));
+}
+#same .hint {
+  position: absolute;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  color: var(--mute);
+  font-size: 14px;
+  opacity: calc(1 - clamp(0, var(--p) / 0.2, 1));
+}
+
+/* ---------- Scene 3: the "+" takeover, then credentials ---------- */
+#who { height: 280vh; }
+#who .stage { background: var(--paper); }
+#who .plus {
+  --k: clamp(0, (var(--p) - 0.04) / 0.42, 1);
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 14vmin; height: 14vmin;
+  transform: translate(-50%, -50%) scale(calc(1 + var(--k) * var(--k) * 70));
+  will-change: transform;
+}
+#who .plus::before, #who .plus::after {
+  content: "";
+  position: absolute;
+  background: var(--add-bg);
+  border-radius: 2px;
+}
+#who .plus::before { left: 0; right: 0; top: 40%; bottom: 40%; }
+#who .plus::after { top: 0; bottom: 0; left: 40%; right: 40%; }
+#who .sg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: clamp(0, (var(--p) - 0.36) / 0.1, 1);
+}
+#who .creds {
+  position: relative;
+  z-index: 1;
+  opacity: clamp(0, (var(--p) - 0.42) / 0.14, 1);
+}
+#who h2 { font-size: clamp(40px, 6.4vw, 112px); margin: 10px 0 clamp(28px, 6vh, 64px); overflow: hidden; padding-bottom: 0.1em; }
+#who h2 .rise { display: block; transform: translateY(calc((1 - clamp(0, (var(--p) - 0.44) / 0.14, 1)) * 105%)); }
+.facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.facts li {
+  border-top: 2px solid var(--ink);
+  padding-top: 18px;
+  transform: translateY(calc((1 - clamp(0, (var(--p) - var(--at)) / 0.12, 1)) * 24px));
+}
+.facts b { display: block; font-size: clamp(24px, 2.6vw, 40px); font-weight: 700; line-height: 1.08; letter-spacing: -0.028em; }
+.facts span { display: block; margin-top: 10px; font-size: 17px; }
+
+/* ---------- Scene 4: example, before → after wipe ---------- */
+#case { height: 340vh; background: var(--night); color: #F5F5F7; }
+#case .stage { gap: 22px; padding-block: 64px 24px; }
+#case .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 8px 24px; }
+#case .head .eyebrow { color: var(--add-bg); margin-bottom: 6px; }
+#case h2 { font-size: clamp(36px, 5.2vw, 92px); }
+#case .head p { margin: 0; color: #A1A1A6; font-size: 17px; }
+.casegrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: 32px;
+  align-items: center;
+  min-height: 0;
+}
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 62svh;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  margin-inline: auto;
+  --w: clamp(0, (var(--p) - 0.1) / 0.6, 1);
+}
+.urlbar {
+  position: absolute; z-index: 3; top: 0; left: 0; right: 0;
+  height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: #E8E8ED;
+  color: #424245;
+  font-size: 12px; letter-spacing: -0.01em;
+}
+.site { position: absolute; inset: 30px 0 0 0; overflow: hidden; }
+
+/* BEFORE: the generic template, on purpose */
+.before {
+  background: #FFFFFF;
+  color: #1F2937;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: normal;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2.2cqh;
+  container-type: size;
+  padding: 0 6%;
+}
+.before .bnav { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; padding: 3cqh 4cqw; font-size: max(9px, 1.6cqw); color: #6B7280; }
+.before h3 { margin: 0; font-size: max(14px, 4.4cqw); font-weight: 700; }
+.before p { margin: 0; font-size: max(10px, 1.9cqw); color: #6B7280; }
+.before .btn { background: #3B82F6; color: #fff; border-radius: 8px; padding: 1.4cqh 3cqw; font-size: max(9px, 1.6cqw); }
+.before .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2cqw; width: 100%; margin-top: 2cqh; }
+.before .card { border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.08); padding: 2.4cqh 1cqw; font-size: max(9px, 1.5cqw); color: #4B5563; }
+.before .card i { display: block; width: 3.4cqw; height: 3.4cqw; border-radius: 50%; background: #E5E7EB; margin: 0 auto 1cqh; }
+
+/* AFTER: built around the bakery, in the bakery's own type */
+.after {
+  background: var(--rye);
+  color: var(--flour);
+  font-family: var(--bakery);
+  letter-spacing: normal;
+  container-type: size;
+  clip-path: inset(0 0 0 calc((1 - var(--w)) * 100%));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 3.4cqh 4cqw;
+}
+.after .anav { display: flex; justify-content: space-between; align-items: center; font-size: max(9px, 1.4cqw); font-weight: 700; }
+.after .order { background: var(--wheat); color: var(--rye); border-radius: 999px; padding: 0.9cqh 1.8cqw; }
+.after h3 {
+  align-self: center;
+  margin: 0;
+  font-weight: 900;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 0.84;
+  font-size: 11.5cqw;
+}
+.after h3 span { color: var(--wheat); }
+.after .today { display: flex; flex-wrap: wrap; gap: 0.6cqh 2.4cqw; font-size: max(9px, 1.35cqw); font-weight: 700; border-top: 1px solid color-mix(in srgb, var(--flour) 30%, transparent); padding-top: 1.6cqh; }
+.after .today b { color: var(--wheat); }
+
+.handle {
+  position: absolute; z-index: 4; top: 30px; bottom: 0;
+  left: calc((1 - var(--w)) * 100%);
+  opacity: calc(1 - clamp(0, (var(--w) - 0.94) / 0.06, 1));
+  width: 2px; margin-left: -1px;
+  background: var(--add-bg);
+}
+.handle::after {
+  content: "+";
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--add-bg); color: var(--ink);
+  font-weight: 600; font-size: 20px; line-height: 1;
+  display: grid; place-items: center;
+}
+.tag {
+  position: absolute; z-index: 4; bottom: 12px;
+  font-size: 12px; font-weight: 600; letter-spacing: -0.01em;
+  padding: 5px 10px; border-radius: 999px;
+}
+.tag.b { left: 12px; background: #F5F5F7; color: #1D1D1F; opacity: calc(1 - clamp(0, (var(--w) - 0.8) / 0.12, 1)); }
+.tag.a { right: 12px; background: var(--add-bg); color: var(--ink); opacity: clamp(0, var(--w) / 0.08, 1); }
+
+.notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px; }
+.notes li { transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+.js .notes li:not(.on) { opacity: 0.3; transform: translateX(8px); }
+.notes b { display: block; font-size: 19px; font-weight: 600; color: var(--add-bg); }
+.notes p { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: #D2D2D7; }
+
+/* ---------- Scene 5: how it works ---------- */
+.how { padding-block: clamp(96px, 16vh, 180px); }
+.how .eyebrow { color: var(--mute); }
+.steps { list-style: none; margin: 24px 0 0; padding: 0; counter-reset: s; }
+.steps li {
+  counter-increment: s;
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 16px;
+  padding: clamp(20px, 3.4vh, 36px) 0;
+  border-top: 1px solid rgb(29 29 31 / 0.16);
+}
+.steps li:last-child { border-bottom: 1px solid rgb(29 29 31 / 0.16); }
+.steps li::before {
+  content: counter(s);
+  font-size: clamp(28px, 4.2vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  color: var(--add);
+}
+.steps .disp { font-size: clamp(28px, 4.2vw, 72px); }
+.steps li:nth-child(2) { padding-left: clamp(0px, 8vw, 140px); }
+.steps li:nth-child(3) { padding-left: clamp(0px, 16vw, 280px); }
+
+/* ---------- Scene 6: finale ---------- */
+.end { background: var(--night); color: #F5F5F7; padding-block: clamp(80px, 14vh, 160px) calc(28px + env(safe-area-inset-bottom, 0px)); overflow: hidden; }
+.end .eyebrow { color: var(--add-bg); }
+.end .ask { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; }
+.end .ask p { margin: 10px 0 0; font-size: clamp(28px, 3.2vw, 48px); line-height: 1.1; max-width: 18ch; font-weight: 700; letter-spacing: -0.03em; }
+.mail { font-size: 17px; user-select: all; color: var(--add-bg); }
+.big {
+  font-size: min(420px, calc((100vw - 32px) / 3.2));
+  margin-top: clamp(48px, 10vh, 120px);
+  white-space: nowrap;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+.big span { color: var(--add-bg); }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; margin-top: 28px; font-size: 12px; color: #86868B; letter-spacing: -0.01em; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 760px) {
+  .hero .lede { grid-template-columns: minmax(0, 1fr); margin-top: 32px; }
+  .hero .lede p { font-size: 19px; }
+  .hero .disp { font-size: 15vw; }
+  #same .disp { font-size: 12vw; }
+  #same { height: 200vh; }
+  #who { height: 220vh; }
+  .facts { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .facts li { padding-top: 12px; }
+  .facts span { margin-top: 4px; font-size: 15px; }
+  #case { height: 260vh; }
+  #case .stage { padding-block: 48px 16px; gap: 14px; }
+  .casegrid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .frame { aspect-ratio: 4 / 5; max-height: 52svh; }
+  .notes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .notes b { font-size: 14px; }
+  .notes p { font-size: 12px; }
+  .after h3 { font-size: 15cqw; }
+  .before .cards { grid-template-columns: 1fr; }
+  .steps li { grid-template-columns: 2.4rem minmax(0, 1fr); }
+  .steps li:nth-child(n) { padding-left: 0; }
+  .end .ask { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- Reduced motion: no pinning, every scene shown in its finished state ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .scene, #same, #who, #case { height: auto; --p: 1 !important; }
+  .stage { position: relative; height: auto; min-height: 0; padding-block: 96px; }
+  #who .stage { background: var(--add-bg); }
+  #who .plus { display: none; }
+  #same .hint { display: none; }
+  .hero .ln.del .strike { animation: none; }
+  .js .notes li:not(.on) { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+<main id="top">
+  <!-- Scene 1: the thesis, as a diff -->
+  <header class="hero wrap">
+    <nav class="top" aria-label="Site">
+      <a class="name" href="#top">Justin</a>
+      <a class="link" href="#contact">Get a free mockup ›</a>
+    </nav>
+    <div class="meta">
+      <span>Websites for local businesses</span>
+      <span>AP Computer Science · Top-ranked U.S. high school</span>
+    </div>
+    <h1 class="disp diff">
+      <del class="ln del"><span class="g" aria-hidden="true">−</span><span class="t"><span class="strike">Template sites.</span></span></del>
+      <ins class="ln add"><span class="g" aria-hidden="true">+</span>Crafted sites.</ins>
+    </h1>
+    <div class="lede">
+      <span></span>
+      <div>
+        <p>I build websites for local businesses, <strong>designed around what makes each one different.</strong> Every project starts with a free homepage mockup.</p>
+        <a class="link" href="#case">See an example ›</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Scene 2: the problem gets corrected while you scroll -->
+  <section class="scene" id="same" data-scene aria-label="The problem">
+    <div class="stage wrap">
+      <h2 class="disp diff">
+        <span style="display:block">Most local sites</span>
+        <del class="old del" style="display:block"><span class="g" aria-hidden="true">−</span><span class="strike">look the same.</span></del>
+        <ins class="mask add"><span class="new"><span class="g" aria-hidden="true">+</span>should look like the business.</span></ins>
+      </h2>
+      <span class="hint">Keep scrolling to fix it.</span>
+    </div>
+  </section>
+
+  <!-- Scene 3: the "+" grows into the next background -->
+  <section class="scene" id="who" data-scene aria-label="About Justin">
+    <div class="stage">
+      <div class="plus" aria-hidden="true"></div>
+      <div class="sg" id="sg" aria-hidden="true"></div>
+      <div class="creds wrap">
+        <span class="eyebrow">About me</span>
+        <h2 class="disp"><span class="rise">Who's building it.</span></h2>
+        <ul class="facts">
+          <li style="--at:.5"><b>AP Computer Science.</b><span>Took the course and kept building after it.</span></li>
+          <li style="--at:.56"><b>Top-ranked U.S. high school.</b><span>Current student.</span></li>
+          <li style="--at:.62"><b>Builds real sites.</b><span>React, Vite, Tailwind, and plain HTML and CSS.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 4: one example, wiped from generic to crafted -->
+  <section class="scene" id="case" data-scene aria-label="Example redesign">
+    <div class="stage wrap">
+      <div class="head">
+        <div>
+          <span class="eyebrow">Example redesign</span>
+          <h2 class="disp">Alder &amp; Rye.</h2>
+        </div>
+        <p>Concept mockup of a fictional bakery.</p>
+      </div>
+      <div class="casegrid">
+        <div class="frame">
+          <div class="urlbar">alderandrye.com</div>
+          <div class="site before" aria-label="Before: a generic template">
+            <div class="bnav"><span>Alder &amp; Rye</span><span>Home · About · Menu · Contact</span></div>
+            <h3>Welcome to Alder &amp; Rye Bakery</h3>
+            <p>Fresh baked goods made with love.</p>
+            <span class="btn">Learn more</span>
+            <div class="cards">
+              <div class="card"><i></i>Fresh</div>
+              <div class="card"><i></i>Local</div>
+              <div class="card"><i></i>Delicious</div>
+            </div>
+          </div>
+          <div class="site after" aria-label="After: designed for the bakery">
+            <div class="anav"><span>Alder &amp; Rye</span><span class="order">Order for pickup</span></div>
+            <h3>Bread before <span>sunrise.</span></h3>
+            <div class="today"><b>Out of the oven today</b><span>Country sourdough</span><span>Seeded rye</span><span>Cardamom buns</span><span>Open 6am–2pm</span></div>
+          </div>
+          <div class="handle" aria-hidden="true"></div>
+          <span class="tag b">Before</span>
+          <span class="tag a">After</span>
+        </div>
+        <ul class="notes">
+          <li data-at=".3"><b>+ Type with a voice.</b><p>One heavy, wide face sized like a shop sign.</p></li>
+          <li data-at=".48"><b>+ Its own colors.</b><p>Crust, flour, and wheat. Nothing default blue.</p></li>
+          <li data-at=".64"><b>+ One clear action.</b><p>"Order for pickup" replaces "Learn more."</p></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 5: the process -->
+  <section class="how wrap" aria-label="How it works">
+    <span class="eyebrow">How it works</span>
+    <ol class="steps">
+      <li><p class="disp">I design a free mockup of your homepage.</p></li>
+      <li><p class="disp">You decide if it's right for you.</p></li>
+      <li><p class="disp">I build it, launch it, and hand it over.</p></li>
+    </ol>
+  </section>
+</main>
+
+<!-- Scene 6: finale -->
+<footer class="end" id="contact">
+  <div class="wrap">
+    <div class="ask">
+      <div>
+        <span class="eyebrow">Ready when you are</span>
+        <p>Want to see your business redesigned? The mockup is free.</p>
+      </div>
+      <span class="mail">your-email@example.com</span>
+    </div>
+    <p class="disp big" aria-label="Justin">Justin<span aria-hidden="true">+</span></p>
+    <div class="foot"><span>Student web designer</span><span>Designed and built by hand.</span></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  document.documentElement.classList.add("js");
+  const scenes = [...document.querySelectorAll("[data-scene]")];
+  const notes = [...document.querySelectorAll(".notes li")];
+  const caseScene = document.getElementById("case");
+
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    notes.forEach((n) => n.classList.add("on"));
+    return;
+  }
+
+  let ticking = false;
+  function update() {
+    ticking = false;
+    const vh = innerHeight;
+    for (const s of scenes) {
+      const r = s.getBoundingClientRect();
+      const len = r.height - vh;
+      const p = len > 0 ? Math.min(1, Math.max(0, -r.top / len)) : 1;
+      s.style.setProperty("--p", p.toFixed(4));
+      if (s === caseScene) {
+        notes.forEach((n) => n.classList.toggle("on", p >= parseFloat(n.dataset.at)));
+      }
+    }
+  }
+  const request = () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  };
+  addEventListener("scroll", request, { passive: true });
+  addEventListener("resize", request);
+  update();
+})();
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://cdn.jsdelivr.net/npm/react@19.1.0/+esm",
+    "react/jsx-runtime": "https://cdn.jsdelivr.net/npm/react@19.1.0/jsx-runtime/+esm",
+    "react-dom/client": "https://cdn.jsdelivr.net/npm/react-dom@19.1.0/client/+esm",
+    "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/+esm",
+    "@react-three/fiber": "https://cdn.jsdelivr.net/npm/@react-three/fiber@9.1.2/+esm",
+    "https://cdn.jsdelivr.net/npm/react@19.0.0/+esm": "https://cdn.jsdelivr.net/npm/react@19.1.0/+esm"
+  }
+}
+</script>
+<script type="module">
+const scene = document.getElementById("who");
+const target = document.getElementById("sg");
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+async function mountGradient() {
+  const [{ createElement: h }, { createRoot }, { ShaderGradientCanvas, ShaderGradient }] = await Promise.all([
+    import("react"),
+    import("react-dom/client"),
+    import("https://cdn.jsdelivr.net/npm/@shadergradient/react@2.4.20/dist/index.mjs"),
+  ]);
+  createRoot(target).render(
+    h(ShaderGradientCanvas, { style: { position: "absolute", inset: 0 }, pixelDensity: 1, fov: 45, pointerEvents: "none" },
+      h(ShaderGradient, {
+        type: "plane",
+        animate: still ? "off" : "on",
+        uSpeed: 0.25, uStrength: 3.2, uDensity: 1.3, uFrequency: 5.5,
+        color1: "#6FD3A2", color2: "#B8EBD0", color3: "#4CC38A",
+        lightType: "3d", brightness: 1.15, grain: "on", reflection: 0.1,
+        cDistance: 3.6, cPolarAngle: 90, cAzimuthAngle: 180,
+        positionX: -1.4, positionY: 0, positionZ: 0,
+        rotationX: 0, rotationY: 10, rotationZ: 50
+      })
+    )
+  );
+}
+
+// If WebGL or the CDN fails, the flat green underneath stays, so the scene still reads
+const near = new IntersectionObserver((entries) => {
+  if (entries.some((e) => e.isIntersecting)) {
+    near.disconnect();
+    mountGradient().catch(() => {});
+  }
+}, { rootMargin: "150% 0px" });
+near.observe(scene);
+</script>
+</body>
+</html>
